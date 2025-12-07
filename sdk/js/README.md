@@ -20,19 +20,23 @@ const client = new LoginWAClient({
 });
 
 async function send() {
-  const start = await client.startOtp({
-    phone: formatPhone('6281234567890'),
-    countryCode: '62',
-  });
+  try {
+    const start = await client.startOtp({
+      phone: formatPhone('6281234567890'),
+      countryCode: '62',
+    });
 
-  console.log('session_id', start.session_id);
+    console.log('session_id', start.session_id);
 
-  // then verify user input
-  const verify = await client.verifyOtp({
-    sessionId: start.session_id,
-    otpCode: '123456',
-  });
-  console.log(verify);
+    // then verify user input
+    const verify = await client.verifyOtp({
+      sessionId: start.session_id,
+      otpCode: '123456',
+    });
+    console.log(verify);
+  } catch (err) {
+    console.error('OTP error', err?.response?.status, err?.response?.data || err.message);
+  }
 }
 
 send().catch(console.error);
@@ -50,3 +54,9 @@ send().catch(console.error);
 ## Base URL
 - Default: `https://loginwa.com/api/v1`
 - Override with `baseUrl` if you use a custom endpoint.
+
+## Common errors
+- `401 unauthorized` — API key invalid/missing.
+- `422 invalid_phone` — phone format not accepted.
+- `422 invalid_code` | `expired` | `max_attempts` — verification failed.
+- `429 quota_exceeded` — throttle; retry after cooldown.

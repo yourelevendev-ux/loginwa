@@ -43,3 +43,9 @@ $verify = $client->verifyOtp([
 
 ## Error handling
 - Throws `RuntimeException` on HTTP error (>=400) or cURL failure. Inspect `$e->getCode()` for HTTP status.
+
+### Common errors
+- `401 unauthorized` — API key invalid/missing.
+- `422 invalid_phone` — phone format not accepted.
+- `422 invalid_code` | `expired` | `max_attempts` — verification failed.
+- `429 quota_exceeded` — throttle; retry after cooldown.
