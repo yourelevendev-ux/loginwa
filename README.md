@@ -72,4 +72,4 @@ Packaged ZIP (same contents as this repo): `https://loginwa.com/loginwa-batch1-s
 - `0.1.0` — Initial client SDKs (JS, PHP), snippet, Postman, docs.
 
 ## Support
-Questions/feedback: support@loginwa.com
+Questions/feedback: dev@loginwa.com
