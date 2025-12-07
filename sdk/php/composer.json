@@ -1,0 +1,14 @@
+{
+    "name": "loginwa/sdk",
+    "description": "LoginWA OTP PHP SDK",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "LoginWA\\SDK\\": "src/"
+        }
+    }
+}
