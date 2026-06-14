@@ -265,8 +265,9 @@ class Client
     // --- HTTP core -----------------------------------------------------------
 
     /**
-     * Back-compat shortcut for a POST. `$path` may be a relative path
-     * (preferred) or a full URL.
+     * Back-compat shortcut for a POST. `$path` is a relative path (preferred);
+     * an absolute URL is accepted ONLY if it targets the configured base-URL
+     * host (the API key is never sent off-host — see request()).
      *
      * @param array<string, mixed> $payload
      * @return array<string, mixed>
@@ -283,7 +284,20 @@ class Client
      */
     protected function request(string $method, string $path, ?array $payload = null, array $query = []): array
     {
-        $url = str_starts_with($path, 'http') ? $path : $this->baseUrl . $path;
+        // Resolve the target URL. An absolute URL is allowed only when its host
+        // matches the configured base URL — otherwise we would attach the
+        // Authorization: Bearer <api key> header to an arbitrary (possibly
+        // attacker-supplied) host and leak the credential.
+        if (preg_match('#^https?://#i', $path)) {
+            $targetHost = parse_url($path, PHP_URL_HOST);
+            $baseHost = parse_url($this->baseUrl, PHP_URL_HOST);
+            if (! $targetHost || $baseHost === null || strcasecmp((string) $targetHost, (string) $baseHost) !== 0) {
+                throw new ApiException('Refusing to send the API key to a host other than ' . $baseHost . ': ' . $path);
+            }
+            $url = $path;
+        } else {
+            $url = $this->baseUrl . $path;
+        }
 
         $query = $this->compact($query);
         if ($query !== []) {
