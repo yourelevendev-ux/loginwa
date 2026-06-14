@@ -1,60 +1,76 @@
 # LoginWA SDKs & Tools
 
-Batch 1 deliverables for non-WordPress users.
+Quick reference for the JavaScript and PHP SDKs. Both cover the full v1 API:
+OTP, messaging (text + media), number check, devices, webhooks, broadcast
+campaigns, and the IP whitelist. For the complete method list see
+`sdk/js/README.md` and `sdk/php/README.md`.
 
 ## JS SDK
-- Path: `sdk/js`
-- Entry: `src/index.js`
-- Install: `npm install @loginwa/sdk` (local package)
-- Usage:
+- Path: `sdk/js` — Entry: `src/index.js` (ESM)
+- Install: `npm install @loginwa/sdk`
 ```js
-import { LoginWAClient } from '@loginwa/sdk';
-const client = new LoginWAClient({ apiKey: 'YOUR_API_KEY' });
-try {
-  const start = await client.startOtp({ phone: '6281234567890', countryCode: '62' });
-  const verify = await client.verifyOtp({ sessionId: start.session_id, otpCode: '123456' });
-  console.log('verified', verify);
-} catch (err) {
-  console.error('OTP error', err?.response?.status, err?.response?.data || err.message);
-}
+import LoginWAClient, { LoginWAError } from '@loginwa/sdk';
+const wa = new LoginWAClient({ apiKey: 'YOUR_API_KEY' });
+
+// messaging
+await wa.sendText({ phone: '6281234567890', message: 'Hello!' });
+await wa.sendImage({ phone: '6281234567890', mediaUrl: 'https://cdn.example.com/a.jpg', caption: 'Hi' });
+
+// OTP
+const start = await wa.startOtp({ phone: '6281234567890' });
+const verify = await wa.verifyOtp({ sessionId: start.session_id, otpCode: '123456' });
 ```
 
 ## PHP SDK
 - Path: `sdk/php`
-- Install: `composer require loginwa/sdk` (local package)
-- Usage:
+- Install: `composer require loginwa/sdk`
 ```php
-$client = new LoginWA\SDK\Client('YOUR_API_KEY');
+use LoginWA\SDK\Client;
+use LoginWA\SDK\ApiException;
+
+$wa = new Client('YOUR_API_KEY');
 try {
-    $start = $client->startOtp(['phone' => '6281234567890', 'country_code' => '62']);
-    $verify = $client->verifyOtp(['session_id' => $start['session_id'], 'otp_code' => '123456']);
-    var_dump($verify);
-} catch (\RuntimeException $e) {
-    echo 'OTP error: ' . $e->getCode() . ' ' . $e->getMessage();
+    $wa->sendMessage(['phone' => '6281234567890', 'message' => 'Hello!']);
+    $start  = $wa->startOtp(['phone' => '6281234567890']);
+    $verify = $wa->verifyOtp(['session_id' => $start['session_id'], 'otp_code' => '123456']);
+} catch (ApiException $e) {
+    echo $e->getCode() . ' ' . $e->getMessage();
 }
 ```
 
-## OTP Widget Snippet
+## Broadcast (both SDKs)
+Create a campaign with an inline contact list, then start it:
+```js
+const c = await wa.createCampaign({
+  name: 'May promo',
+  message: 'Hi {{name}}, enjoy 20% off!',
+  contacts: [{ phone: '6281234567890', name: 'Andi', variables: { name: 'Andi' } }],
+});
+await wa.sendCampaign(c.data.id);
+```
+
+## OTP widget snippet
 - Path: `sdk/snippet/otp-widget.html`
-- HTML/JS embed; set API key and call /auth/start + /auth/verify via fetch.
+- HTML/JS embed; set the API key and call `/auth/start` + `/auth/verify` via fetch.
 
 ## Postman
 - Path: `docs/postman/loginwa-api.postman_collection.json`
-- Variables: `baseUrl` (default `https://loginwa.com/api/v1`), `apiKey`.
+- Variables: `base_url` (default `https://api.loginwa.com`), `api_key`.
 
-## Auth & Headers
+## Auth & headers
 - `Authorization: Bearer <SECRET_API_KEY>`
 - `Content-Type: application/json`
 
 ## Base URL
-- Default `https://loginwa.com/api/v1` (overrideable in SDK constructor).
+- Default `https://api.loginwa.com/api/v1` (overridable in the SDK constructor).
 
 ## Common errors
 - `401 unauthorized` — missing/invalid API key.
-- `422 invalid_phone` — phone format not accepted.
-- `422 invalid_code` | `expired` | `max_attempts` — verification failed.
-- `429 quota_exceeded` — rate/quota exceeded for this key.
-- Network/timeout — retry with backoff; SDK throws with HTTP status in error object/exception code.
+- `422 validation_failed` — invalid request parameters.
+- `429 quota_exceeded` — monthly quota exceeded for this key.
+- `503 no_device_connected` — connect a WhatsApp device first.
+- Network/timeout — retry with backoff; the SDK throws with the HTTP status in
+  the error object (`err.status`) / exception code (`$e->getCode()`).
 
 ## Changelog
-- `0.1.0` — Initial client SDKs (JS, PHP), snippet, Postman, docs.
+See `../CHANGELOG.md`. Latest: `0.2.0` — full v1 API coverage.

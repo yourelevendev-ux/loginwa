@@ -1,7 +1,8 @@
 {
     "name": "loginwa/sdk",
-    "description": "LoginWA OTP PHP SDK",
+    "description": "LoginWA WhatsApp API PHP SDK: OTP, messaging, media, broadcast, devices, webhooks",
     "type": "library",
+    "keywords": ["loginwa", "whatsapp", "whatsapp-api", "otp", "messaging", "broadcast", "sdk"],
     "license": "MIT",
     "require": {
         "php": ">=8.0"

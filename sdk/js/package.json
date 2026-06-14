@@ -1,13 +1,16 @@
 {
   "name": "@loginwa/sdk",
-  "version": "0.1.0",
-  "description": "LoginWA OTP API client (JavaScript)",
+  "version": "0.2.0",
+  "description": "LoginWA WhatsApp API client (JS): OTP, messaging, media, broadcast, devices, webhooks",
   "main": "src/index.js",
   "type": "module",
   "keywords": [
     "loginwa",
-    "otp",
     "whatsapp",
+    "whatsapp-api",
+    "otp",
+    "messaging",
+    "broadcast",
     "sdk"
   ],
   "license": "MIT"
